@@ -2,6 +2,7 @@ import path from 'node:path';
 import {readFileSync, existsSync} from 'node:fs';
 import {
 	app,
+	powerMonitor,
 	nativeImage,
 	screen as electronScreen,
 	session,
@@ -494,6 +495,15 @@ function createMainWindow(): BrowserWindow {
 
 		if (is.macos) {
 			await import('./touch-bar');
+		}
+	});
+
+	// Reload the web view when the system resumes from suspend
+	// to fix stale connections after waking from sleep
+	// See: https://github.com/sindresorhus/caprine/issues/103
+	powerMonitor.on('resume', () => {
+		if (mainWindow && !mainWindow.isDestroyed()) {
+			mainWindow.webContents.reload();
 		}
 	});
 
